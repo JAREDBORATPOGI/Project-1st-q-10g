@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Goldfish Shop - Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <h2>Goldfish Shop</h2>
+        <div>
+            <a href="index.html">SKU Generator</a>
+            <a href="receipt.html">Register</a>
+        </div>
+    </nav>
+
+    <main class="register-page">
+        <div class="register">
+            <div class="register-left">
+                <h1>🐟 Cash Register</h1>
+
+                <label>Customer Name</label>
+                <input id="customer" type="text" placeholder="Customer name">
+
+                <h2>Select Goldfish</h2>
+                <div class="fish-buttons">
+                    <button onclick="addFish('Ranchu', 1500)">Ranchu<br><small>₱1,500</small></button>
+                    <button onclick="addFish('Oranda', 1800)">Oranda<br><small>₱1,800</small></button>
+                    <button onclick="addFish('Lionhead', 1700)">Lionhead<br><small>₱1,700</small></button>
+                </div>
+
+                <h2>Quantity Calculator</h2>
+                <input id="display" class="calculator-display" value="0" readonly>
+
+                <div class="calculator">
+                    <button onclick="number('7')">7</button>
+                    <button onclick="number('8')">8</button>
+                    <button onclick="number('9')">9</button>
+                    <button onclick="clearDisplay()">C</button>
+
+                    <button onclick="number('4')">4</button>
+                    <button onclick="number('5')">5</button>
+                    <button onclick="number('6')">6</button>
+                    <button onclick="backspace()">⌫</button>
+
+                    <button onclick="number('1')">1</button>
+                    <button onclick="number('2')">2</button>
+                    <button onclick="number('3')">3</button>
+                    <button onclick="number('0')">0</button>
+                </div>
+
+                <button class="add-button" onclick="addFromCalculator()">Add Item</button>
+            </div>
+
+            <div class="receipt-paper">
+                <h2>GOLDFISH SHOP</h2>
+                <p class="center">Fresh Fancy Goldfish</p>
+                <hr>
+
+                <p>Customer: <span id="receiptCustomer">---</span></p>
+                <div id="items"><p>No items yet.</p></div>
+
+                <hr>
+                <div class="total-row">
+                    <strong>TOTAL</strong>
+                    <strong>₱<span id="total">0.00</span></strong>
+                </div>
+
+                <label>Cash Received</label>
+                <input id="cash" type="number" placeholder="0.00" oninput="calculateChange()">
+
+                <div class="change">
+                    <strong>CHANGE</strong>
+                    <strong>₱<span id="change">0.00</span></strong>
+                </div>
+
+    
+                <button class="new-button" onclick="newSale()">New Sale</button>
+
+                <p class="center small">Thank you for shopping!</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let cart = [];
+        let displayValue = "0";
+        let selectedFish = null;
+
+        function addFish(name, price) {
+            selectedFish = { name: name, price: price };
+            displayValue = "1";
+            updateDisplay();
+        }
+
+        function number(value) {
+            if (displayValue === "0") displayValue = value;
+            else displayValue += value;
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            displayValue = "0";
+            updateDisplay();
+        }
+
+        function backspace() {
+            displayValue = displayValue.slice(0, -1);
+            if (displayValue === "") displayValue = "0";
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById("display").value = displayValue;
+        }
+
+        function addFromCalculator() {
+            if (selectedFish === null) {
+                alert("Choose a goldfish first.");
+                return;
+            }
+
+            let quantity = Number(displayValue);
+
+            if (quantity < 1) {
+                alert("Enter a quantity.");
+                return;
+            }
+
+            cart.push({
+                name: selectedFish.name,
+                price: selectedFish.price,
+                quantity: quantity
+            });
+
+            selectedFish = null;
+            clearDisplay();
+            showItems();
+        }
+
+        function showItems() {
+            let items = document.getElementById("items");
+            let total = 0;
+
+            if (cart.length === 0) {
+                items.innerHTML = "<p>No items yet.</p>";
+            } else {
+                items.innerHTML = "";
+
+                cart.forEach(function(item) {
+                    let itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+
+                    items.innerHTML +=
+                        "<div class='receipt-item'>" +
+                        "<span>" + item.name + " x" + item.quantity + "</span>" +
+                        "<span>₱" + itemTotal.toFixed(2) + "</span>" +
+                        "</div>";
+                });
+            }
+
+            document.getElementById("total").textContent = total.toFixed(2);
+            calculateChange();
+        }
+
+        function calculateChange() {
+            let total = getTotal();
+            let cash = Number(document.getElementById("cash").value);
+            let change = cash - total;
+
+            if (change < 0 || isNaN(change)) change = 0;
+
+            document.getElementById("change").textContent = change.toFixed(2);
+            document.getElementById("receiptCustomer").textContent =
+                document.getElementById("customer").value || "---";
+        }
+
+        function getTotal() {
+            let total = 0;
+
+            cart.forEach(function(item) {
+                total += item.price * item.quantity;
+            });
+
+            return total;
+        }
+
+        function printReceipt() {
+            if (cart.length === 0) {
+                alert("Add an item first.");
+                return;
+            }
+
+            window.print();
+        }
+
+        function newSale() {
+            cart = [];
+            displayValue = "0";
+            selectedFish = null;
+
+            document.getElementById("customer").value = "";
+            document.getElementById("cash").value = "";
+
+            updateDisplay();
+            showItems();
+        }
+    </script>
+</body>
+</html>
